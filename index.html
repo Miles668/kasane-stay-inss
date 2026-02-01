@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Accolink | Premium Guest Houses</title>
+    
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css"/>
+    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+
+    <style>
+        /* --- CSS VARIABLES (Emerald Theme) --- */
+        :root {
+            --primary: #10B981;       /* Emerald 500 */
+            --primary-dark: #047857;  /* Emerald 700 */
+            --bg-dark: #0f172a;       /* Slate 900 */
+            --bg-card: #1e293b;       /* Slate 800 */
+            --text-main: #f8fafc;     /* Slate 50 */
+            --text-muted: #94a3b8;    /* Slate 400 */
+            --accent: #F59E0B;        /* Amber 500 (Stars/Buttons) */
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            font-family: 'Inter', sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* --- HEADER & SEARCH --- */
+        header {
+            position: sticky;
+            top: 0;
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            padding: 1rem 5%;
+            border-bottom: 1px solid #334155;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .logo { font-size: 1.5rem; font-weight: 800; color: var(--primary); letter-spacing: -1px; }
+        .logo span { color: white; }
+
+        .search-container {
+            flex-grow: 1;
+            max-width: 500px;
+            position: relative;
+        }
+
+        #property-search {
+            width: 100%;
+            padding: 12px 20px 12px 45px;
+            border-radius: 50px;
+            border: 2px solid #334155;
+            background: var(--bg-card);
+            color: white;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+        }
+
+        #property-search:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.2);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+        }
+
+        /* --- GRID LAYOUT --- */
+        main {
+            padding: 2rem 5%;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 2rem;
+        }
+
+        /* --- CARD DESIGN --- */
+        .card {
+            background: var(--bg-card);
+            border-radius: 16px;
+            overflow: hidden;
+            border: 1px solid #334155;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
+            border-color: var(--primary-dark);
+        }
+
+        /* Swiper / Image Slider */
+        .swiper {
+            width: 100%;
+            height: 220px;
+        }
+        
+        .swiper-slide img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .card-content { padding: 1.5rem; flex-grow: 1; display: flex; flex-direction: column; }
+
+        .card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.5rem; }
+        
+        .card-title { font-size: 1.25rem; font-weight: 700; color: white; }
+        .card-location { font-size: 0.875rem; color: var(--text-muted); display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem; }
+        
+        .stars { color: var(--accent); font-size: 0.9rem; }
+
+        .amenities {
+            display: flex;
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .amenity-tag {
+            background: #334155;
+            color: var(--text-muted);
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .card-footer {
+            margin-top: auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px solid #334155;
+            padding-top: 1rem;
+        }
+
+        .price { font-size: 1.25rem; font-weight: 700; color: var(--primary); }
+        .price span { font-size: 0.8rem; color: var(--text-muted); font-weight: 400; }
+
+        .btn-book {
+            background: var(--primary);
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+        }
+
+        .btn-book:hover { background: var(--primary-dark); }
+        
+        /* Loading & Empty States */
+        .state-msg { text-align: center; color: var(--text-muted); padding: 4rem; grid-column: 1 / -1; }
+
+        /* Responsive Fixes */
+        @media (max-width: 640px) {
+            header { flex-direction: column; align-items: stretch; }
+            .grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo">ACCOLINK<span>.BW</span></div>
+        <div class="search-container">
+            <i class="fa-solid fa-search search-icon"></i>
+            <input type="text" id="property-search" placeholder="Search by name or location (e.g. Kasane)...">
+        </div>
+    </header>
+
+    <main>
+        <div id="property-grid" class="grid">
+            <div class="state-msg">
+                <i class="fa-solid fa-spinner fa-spin fa-2x"></i>
+                <p style="margin-top: 1rem;">Finding best stays...</p>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // --- 1. CONFIGURATION ---
+        // REPLACE THESE WITH YOUR REAL KEYS!
+        const SUPABASE_URL = 'https://vmctxpfqlwqhcdwiqkpg.supabase.co';
+        const SUPABASE_KEY = 'sb_publishable_DKgc7fLhpguRjq_xac86hw_F7MzhEjm';
+        
+        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        
+        // Icon Mapping for Amenities
+        const iconMap = {
+            'wifi': 'fa-wifi',
+            'pool': 'fa-person-swimming',
+            'ac': 'fa-snowflake',
+            'tv': 'fa-tv',
+            'parking': 'fa-car',
+            'bar': 'fa-martini-glass'
+        };
+
+        // Global State
+        let allProperties = [];
+
+        // --- 2. CORE FUNCTIONS ---
+
+        // Fetch Data
+        async function fetchProperties() {
+            const grid = document.getElementById('property-grid');
+            
+            try {
+                let { data: properties, error } = await supabase
+                    .from('properties') // Make sure table name matches
+                    .select('*')
+                    .order('created_at', { ascending: false });
+
+                if (error) throw error;
+
+                allProperties = properties;
+                renderProperties(allProperties);
+
+                // Analytics: Count views for all loaded properties
+                // (In a real app, you'd batch this or only do it on view)
+                properties.forEach(p => trackView(p.id));
+
+            } catch (err) {
+                console.error('Error:', err);
+                grid.innerHTML = `<div class="state-msg"><p>Failed to load data. Please check connection.</p></div>`;
+            }
+        }
+
+        // Render Cards (The .map magic)
+        function renderProperties(properties) {
+            const grid = document.getElementById('property-grid');
+            
+            if (properties.length === 0) {
+                grid.innerHTML = `<div class="state-msg"><p>No properties found matching your search.</p></div>`;
+                return;
+            }
+
+            // Using .map() to generate HTML string
+            const cardsHTML = properties.map(property => {
+                // 1. Handle Images JSONB safely
+                const images = Array.isArray(property.images) && property.images.length > 0 
+                    ? property.images 
+                    : ['https://via.placeholder.com/400x300?text=No+Image']; // Fallback
+
+                // 2. Generate Slider Slides
+                const slidesHTML = images.map(img => `
+                    <div class="swiper-slide">
+                        <img src="${img}" alt="${property.name}" loading="lazy">
+                    </div>
+                `).join('');
+
+                // 3. Handle Amenities JSONB
+                const amens = Array.isArray(property.amenities) ? property.amenities : [];
+                const amenitiesHTML = amens.map(amenity => {
+                    const icon = iconMap[amenity.toLowerCase()] || 'fa-check';
+                    return `<span class="amenity-tag"><i class="fa-solid ${icon}"></i> ${amenity}</span>`;
+                }).join('');
+
+                // 4. Generate Stars
+                const starsHTML = '<i class="fa-solid fa-star"></i>'.repeat(property.stars || 0);
+
+                // 5. Return the Card HTML
+                return `
+                    <article class="card">
+                        <div class="swiper mySwiper-${property.id}">
+                            <div class="swiper-wrapper">
+                                ${slidesHTML}
+                            </div>
+                            <div class="swiper-pagination"></div>
+                            <div class="swiper-button-next"></div>
+                            <div class="swiper-button-prev"></div>
+                        </div>
+
+                        <div class="card-content">
+                            <div class="card-header">
+                                <div>
+                                    <h2 class="card-title">${property.name}</h2>
+                                    <div class="stars">${starsHTML}</div>
+                                </div>
+                            </div>
+                            
+                            <div class="card-location">
+                                <i class="fa-solid fa-location-dot"></i> ${property.location}
+                            </div>
+
+                            <div class="amenities">
+                                ${amenitiesHTML}
+                            </div>
+
+                            <div class="card-footer">
+                                <div class="price">P${property.price}<span>/night</span></div>
+                                <button onclick="handleBooking('${property.id}', '${property.whatsapp}', '${property.name}')" class="btn-book">
+                                    Book Now <i class="fa-brands fa-whatsapp"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </article>
+                `;
+            }).join(''); // Join the array into a single string
+
+            grid.innerHTML = cardsHTML;
+
+            // Re-initialize Swipers for new content
+            initSwipers();
+        }
+
+        // Initialize Swiper.js instances
+        function initSwipers() {
+            const swipers = document.querySelectorAll('.swiper');
+            swipers.forEach(el => {
+                new Swiper(el, {
+                    loop: true,
+                    pagination: { el: '.swiper-pagination', dynamicBullets: true },
+                    navigation: { nextEl: '.swiper-button-next', prevEl: '.swiper-button-prev' },
+                });
+            });
+        }
+
+        // --- 3. INTERACTIVITY & ANALYTICS ---
+
+        // Search Filter (Real-time)
+        const searchInput = document.getElementById('property-search');
+        searchInput.addEventListener('input', (e) => {
+            const term = e.target.value.toLowerCase();
+            const filtered = allProperties.filter(p => 
+                p.name.toLowerCase().includes(term) || 
+                p.location.toLowerCase().includes(term)
+            );
+            renderProperties(filtered);
+        });
+
+        // Booking Handler
+        window.handleBooking = async (id, phone, name) => {
+            // 1. Track Click (Fire and forget)
+            supabase.rpc('increment_clicks', { row_id: id }).then(({ error }) => {
+                if(error) console.error('Analytics error:', error);
+            });
+
+            // 2. Open WhatsApp
+            const cleanPhone = phone.replace(/\D/g, ''); // Remove non-numbers
+            const message = encodeURIComponent(`Hello! I saw ${name} on Accolink and would like to book.`);
+            window.open(`https://wa.me/${cleanPhone}?text=${message}`, '_blank');
+        };
+
+        // View Tracker
+        async function trackView(id) {
+            await supabase.rpc('increment_views', { row_id: id });
+        }
+
+        // Start the app
+        fetchProperties();
+
+    </script>
+</body>
+</html>
